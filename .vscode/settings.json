@@ -1,0 +1,10 @@
+{
+    "C_Cpp.default.includePath": [
+        "vendor/libigl/include",
+        "vendor/eigen"
+    ],
+    "files.associations": {
+        "streambuf": "cpp",
+        "iosfwd": "cpp"
+    }
+}
