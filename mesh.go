@@ -1,6 +1,6 @@
 package goigl
 
-// #cgo CPPFLAGS: -Ivendor/libigl/include -Ivendor/eigen
+// #cgo CPPFLAGS: -Icvendor/libigl/include -Icvendor/eigen
 // #include "mesh.h"
 // #include "stdlib.h"
 import "C"

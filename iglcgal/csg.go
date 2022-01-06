@@ -1,6 +1,6 @@
 package iglcgal
 
-// #cgo CPPFLAGS: -I../vendor/libigl/include -I../vendor/eigen -DBOOST_BIND_GLOBAL_PLACEHOLDERS
+// #cgo CPPFLAGS: -I../cvendor/libigl/include -I../cvendor/eigen -DBOOST_BIND_GLOBAL_PLACEHOLDERS
 // #cgo LDFLAGS: -lgmp -lmpfr
 // #include "csg.h"
 // #include "stdlib.h"
