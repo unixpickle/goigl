@@ -29,7 +29,7 @@ mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out) {
     delete mesh;
     return NULL;
   } catch (...) {
-    copy_error_message("unknown error", error_out);
+    copy_error_message("unknown error decoding STL", error_out);
     delete mesh;
     return NULL;
   }
