@@ -13,8 +13,12 @@ mesh_t *mesh_decode_stl(const char *data, size_t data_len) {
   mesh_t *mesh = new mesh_t;
   Eigen::MatrixXd N;
   std::istringstream stream(std::string(data, (size_t)data_len));
-  bool success = igl::readSTL(stream, mesh->V, mesh->F, N);
-  if (!success) {
+  try {
+    bool success = igl::readSTL(stream, mesh->V, mesh->F, N);
+    if (!success) {
+      throw 0;
+    }
+  } catch (...) {
     delete mesh;
     return NULL;
   }
