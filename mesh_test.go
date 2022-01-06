@@ -1,4 +1,4 @@
-package igl
+package goigl
 
 import (
 	"io/ioutil"

@@ -1,4 +1,4 @@
-package igl
+package goigl
 
 // #cgo CPPFLAGS: -Ivendor/libigl/include -Ivendor/eigen
 // #include "mesh.h"
@@ -18,9 +18,20 @@ type Mesh struct {
 	ptr *C.mesh_t
 }
 
+// NewMeshPointer creates a Mesh from a backing C object.
+//
+// The backing C object will be owned by the result and freed by a finalizer.
+func NewMeshPointer(ptr unsafe.Pointer) *Mesh {
+	res := &Mesh{ptr: (*C.mesh_t)(ptr)}
+	runtime.SetFinalizer(res, (*Mesh).Delete)
+	return res
+}
+
 // MeshDecodeSTL decodes data from an STL file into a Mesh.
 func MeshDecodeSTL(data []byte) (*Mesh, error) {
-	ptr := C.mesh_decode_stl(C.CString(string(data)), C.size_t(len(data)))
+	cstring := C.CString(string(data))
+	ptr := C.mesh_decode_stl(cstring, C.size_t(len(data)))
+	C.free(unsafe.Pointer(cstring))
 	if ptr == nil {
 		return nil, errors.New("failed to decode STL data")
 	}
@@ -31,7 +42,7 @@ func MeshDecodeSTL(data []byte) (*Mesh, error) {
 
 // Vertices creates a copy of the vertices array.
 func (m *Mesh) Vertices() []float64 {
-	m.check()
+	m.Check()
 	data := C.mesh_vertices(m.ptr)
 	carr := (*[1 << 32]C.double)(unsafe.Pointer(data))[:C.mesh_vertices_size(m.ptr)]
 	result := make([]float64, len(carr))
@@ -44,7 +55,7 @@ func (m *Mesh) Vertices() []float64 {
 
 // NumVertices returns the total number of vertices in the mesh.
 func (m *Mesh) NumVertices() int {
-	m.check()
+	m.Check()
 	if m.ptr == nil {
 		panic("mesh has been freed")
 	}
@@ -53,7 +64,7 @@ func (m *Mesh) NumVertices() int {
 
 // Faces creates a copy of the faces array.
 func (m *Mesh) Faces() []int {
-	m.check()
+	m.Check()
 	data := C.mesh_faces(m.ptr)
 	carr := (*[1 << 32]C.int)(unsafe.Pointer(data))[:C.mesh_faces_size(m.ptr)]
 	result := make([]int, len(carr))
@@ -66,7 +77,7 @@ func (m *Mesh) Faces() []int {
 
 // NumFaces returns the total number of faces in the mesh.
 func (m *Mesh) NumFaces() int {
-	m.check()
+	m.Check()
 	return int(C.mesh_num_faces(m.ptr))
 }
 
@@ -82,7 +93,14 @@ func (m *Mesh) Delete() {
 	}
 }
 
-func (m *Mesh) check() {
+// Pointer gets a pointer to the C data structure backing this object.
+func (m *Mesh) Pointer() unsafe.Pointer {
+	return unsafe.Pointer(m.ptr)
+}
+
+// Check panic()s if the mesh has already been Delete()ed, or is a no-op
+// otherwise.
+func (m *Mesh) Check() {
 	if m.ptr == nil {
 		panic("mesh has been freed")
 	}
