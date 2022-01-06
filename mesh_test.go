@@ -22,6 +22,13 @@ func TestMeshDecodeSTL(t *testing.T) {
 	}
 }
 
+func TestMeshDecodeSTLError(t *testing.T) {
+	_, err := MeshDecodeSTL(make([]byte, 10))
+	if err == nil {
+		t.Fatal("expected error from decoding invalid mesh")
+	}
+}
+
 func TestMeshVerticesFaces(t *testing.T) {
 	data, err := ioutil.ReadFile("test_data/cube.stl")
 	if err != nil {

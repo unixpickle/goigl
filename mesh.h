@@ -6,7 +6,7 @@ extern "C" {
 
 typedef struct mesh_t mesh_t;
 
-mesh_t *mesh_decode_stl(const char *data, size_t data_len);
+mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out);
 double *mesh_vertices(mesh_t *mesh);
 size_t mesh_vertices_size(mesh_t *mesh);
 int mesh_num_vertices(mesh_t *mesh);

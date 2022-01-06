@@ -9,7 +9,13 @@ struct mesh_t {
   Eigen::MatrixXi F;
 };
 
-mesh_t *mesh_decode_stl(const char *data, size_t data_len) {
+static void copy_error_message(const char *msg, char **output) {
+  const int error_len = strlen(msg);
+  *output = (char *)malloc(error_len + 1);
+  memcpy(*output, msg, error_len + 1);
+}
+
+mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out) {
   mesh_t *mesh = new mesh_t;
   Eigen::MatrixXd N;
   std::istringstream stream(std::string(data, (size_t)data_len));
@@ -18,7 +24,12 @@ mesh_t *mesh_decode_stl(const char *data, size_t data_len) {
     if (!success) {
       throw 0;
     }
+  } catch (const std::runtime_error &re) {
+    copy_error_message(re.what(), error_out);
+    delete mesh;
+    return NULL;
   } catch (...) {
+    copy_error_message("unknown error", error_out);
     delete mesh;
     return NULL;
   }

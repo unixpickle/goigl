@@ -30,10 +30,13 @@ func NewMeshPointer(ptr unsafe.Pointer) *Mesh {
 // MeshDecodeSTL decodes data from an STL file into a Mesh.
 func MeshDecodeSTL(data []byte) (*Mesh, error) {
 	cstring := C.CString(string(data))
-	ptr := C.mesh_decode_stl(cstring, C.size_t(len(data)))
+	var errorOut *C.char
+	ptr := C.mesh_decode_stl(cstring, C.size_t(len(data)), &errorOut)
 	C.free(unsafe.Pointer(cstring))
 	if ptr == nil {
-		return nil, errors.New("failed to decode STL data")
+		errorMsg := C.GoString(errorOut)
+		C.free(unsafe.Pointer(errorOut))
+		return nil, errors.New(errorMsg)
 	}
 	res := &Mesh{ptr: ptr}
 	runtime.SetFinalizer(res, (*Mesh).Delete)
