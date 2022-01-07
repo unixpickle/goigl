@@ -34,7 +34,7 @@ func MeshDecodeSTL(data []byte) (*Mesh, error) {
 	ptr := C.mesh_decode_stl(cstring, C.size_t(len(data)), &errorOut)
 	C.free(unsafe.Pointer(cstring))
 	if ptr == nil {
-		errorMsg := C.GoString(errorOut)
+		errorMsg := "decode STL: " + C.GoString(errorOut)
 		C.free(unsafe.Pointer(errorOut))
 		return nil, errors.New(errorMsg)
 	}
@@ -107,4 +107,17 @@ func (m *Mesh) Check() {
 	if m.ptr == nil {
 		panic("mesh has been freed")
 	}
+}
+
+// WriteSTL writes the mesh to an STL file.
+func (m *Mesh) WriteSTL(path string) error {
+	cstr := C.CString(path)
+	msg := C.mesh_write_stl(m.ptr, cstr)
+	C.free(unsafe.Pointer(cstr))
+	var err error
+	if msg != nil {
+		err = errors.New("write STL: " + C.GoString(msg))
+		C.free(unsafe.Pointer(msg))
+	}
+	return err
 }

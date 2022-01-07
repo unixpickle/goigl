@@ -1,6 +1,7 @@
 #include "mesh.h"
 
 #include <igl/readSTL.h>
+#include <igl/writeSTL.h>
 
 #include <sstream>
 
@@ -9,10 +10,15 @@ struct mesh_t {
   Eigen::MatrixXi F;
 };
 
-static void copy_error_message(const char *msg, char **output) {
+static char *copy_str(const char *msg) {
   const int error_len = strlen(msg);
-  *output = (char *)malloc(error_len + 1);
-  memcpy(*output, msg, error_len + 1);
+  char *output = (char *)malloc(error_len + 1);
+  memcpy(output, msg, error_len + 1);
+  return output;
+}
+
+static void copy_error_message(const char *msg, char **output) {
+  *output = copy_str(msg);
 }
 
 mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out) {
@@ -34,6 +40,22 @@ mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out) {
     return NULL;
   }
   return mesh;
+}
+
+char *mesh_write_stl(mesh_t *mesh, const char *path) {
+  std::string path_str(path);
+  try {
+    bool success =
+        igl::writeSTL(path_str, mesh->V, mesh->F, igl::FileEncoding::Binary);
+    if (!success) {
+      throw 0;
+    }
+  } catch (const std::runtime_error &re) {
+    return copy_str(re.what());
+  } catch (...) {
+    return copy_str("an unknown error occurred;");
+  }
+  return NULL;
 }
 
 double *mesh_vertices(mesh_t *mesh) {
