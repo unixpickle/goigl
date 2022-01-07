@@ -22,6 +22,9 @@ const (
 	Resolve
 )
 
+// MeshBoolean performs a robust boolean operation on the pair of meshes.
+// This can be composed multiple times to perform more general operations on a
+// larger set of meshes.
 func MeshBoolean(m1, m2 *goigl.Mesh, t MeshBooleanType) *goigl.Mesh {
 	m1.Check()
 	m2.Check()
