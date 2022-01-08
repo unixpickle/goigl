@@ -47,7 +47,7 @@ func NewMesh(vertices []float64, faces []int) *Mesh {
 	)}
 	C.free(vsPtr)
 	C.free(fsPtr)
-	runtime.SetFinalizer(res, (*Mesh).Delete)
+	res.setFinalizer()
 	return res
 }
 
@@ -56,7 +56,7 @@ func NewMesh(vertices []float64, faces []int) *Mesh {
 // The backing C object will be owned by the result and freed by a finalizer.
 func NewMeshPointer(ptr unsafe.Pointer) *Mesh {
 	res := &Mesh{ptr: (*C.mesh_t)(ptr)}
-	runtime.SetFinalizer(res, (*Mesh).Delete)
+	res.setFinalizer()
 	return res
 }
 
@@ -72,7 +72,7 @@ func MeshDecodeSTL(data []byte) (*Mesh, error) {
 		return nil, errors.New(errorMsg)
 	}
 	res := &Mesh{ptr: ptr}
-	runtime.SetFinalizer(res, (*Mesh).Delete)
+	res.setFinalizer()
 	return res, nil
 }
 
@@ -153,4 +153,8 @@ func (m *Mesh) WriteSTL(path string) error {
 		C.free(unsafe.Pointer(msg))
 	}
 	return err
+}
+
+func (m *Mesh) setFinalizer() {
+	runtime.SetFinalizer(m, (*Mesh).Delete)
 }
