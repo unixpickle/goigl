@@ -19,6 +19,11 @@ type Mesh struct {
 }
 
 // NewMesh creates a mesh from faces and vertices.
+//
+// Each vertex is stored as three sequential floats, and each face is stored as
+// three vertex indices.
+//
+// This will panic if any face index is out of bounds.
 func NewMesh(vertices []float64, faces []int) *Mesh {
 	vsPtr := C.malloc(C.size_t(len(vertices)) * C.size_t(unsafe.Sizeof(C.double(0))))
 	if vsPtr == nil {
@@ -37,6 +42,9 @@ func NewMesh(vertices []float64, faces []int) *Mesh {
 	b := (*[1<<30 - 1]C.int)(fsPtr)
 	for i, x := range faces {
 		b[i] = C.int(x)
+		if int(b[i]) < 0 || int(b[i]) >= len(vertices)/3 {
+			panic("face index out of bounds")
+		}
 	}
 
 	res := &Mesh{ptr: C.mesh_new(
