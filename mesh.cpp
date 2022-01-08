@@ -21,6 +21,22 @@ static void copy_error_message(const char *msg, char **output) {
   *output = copy_str(msg);
 }
 
+mesh_t *mesh_new(const double *vertices, size_t num_verts, const int *faces,
+                 size_t num_faces) {
+  mesh_t *mesh = new mesh_t;
+  mesh->V = Eigen::MatrixXd::Zero(num_verts, 3);
+  mesh->F = Eigen::MatrixXi::Zero(num_faces, 3);
+  for (size_t i = 0; i < num_verts; i++) {
+    mesh->V(i, 0) = vertices[i * 3];
+    mesh->V(i, 1) = vertices[i * 3 + 1];
+    mesh->V(i, 2) = vertices[i * 3 + 2];
+    mesh->F(i, 0) = faces[i * 3];
+    mesh->F(i, 1) = faces[i * 3 + 1];
+    mesh->F(i, 2) = faces[i * 3 + 2];
+  }
+  return mesh;
+}
+
 mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out) {
   mesh_t *mesh = new mesh_t;
   Eigen::MatrixXd N;

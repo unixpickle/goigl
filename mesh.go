@@ -18,6 +18,39 @@ type Mesh struct {
 	ptr *C.mesh_t
 }
 
+// NewMesh creates a mesh from faces and vertices.
+func NewMesh(vertices []float64, faces []int) *Mesh {
+	vsPtr := C.malloc(C.size_t(len(vertices)) * C.size_t(unsafe.Sizeof(C.double(0))))
+	if vsPtr == nil {
+		panic("allocation failed")
+	}
+	a := (*[1<<30 - 1]C.double)(vsPtr)
+	for i, x := range vertices {
+		a[i] = C.double(x)
+	}
+
+	fsPtr := C.malloc(C.size_t(len(faces)) * C.size_t(unsafe.Sizeof(C.int(0))))
+	if fsPtr == nil {
+		C.free(vsPtr)
+		panic("allocation failed")
+	}
+	b := (*[1<<30 - 1]C.int)(fsPtr)
+	for i, x := range faces {
+		b[i] = C.int(x)
+	}
+
+	res := &Mesh{ptr: C.mesh_new(
+		(*C.double)(vsPtr),
+		C.size_t(len(vertices)),
+		(*C.int)(fsPtr),
+		C.size_t(len(faces)),
+	)}
+	C.free(vsPtr)
+	C.free(fsPtr)
+	runtime.SetFinalizer(res, (*Mesh).Delete)
+	return res
+}
+
 // NewMeshPointer creates a Mesh from a backing C object.
 //
 // The backing C object will be owned by the result and freed by a finalizer.
@@ -47,7 +80,7 @@ func MeshDecodeSTL(data []byte) (*Mesh, error) {
 func (m *Mesh) Vertices() []float64 {
 	m.Check()
 	data := C.mesh_vertices(m.ptr)
-	carr := (*[1 << 32]C.double)(unsafe.Pointer(data))[:C.mesh_vertices_size(m.ptr)]
+	carr := (*[1<<30 - 1]C.double)(unsafe.Pointer(data))[:C.mesh_vertices_size(m.ptr)]
 	result := make([]float64, len(carr))
 	for i, x := range carr {
 		result[i] = float64(x)
