@@ -30,6 +30,8 @@ mesh_t *mesh_new(const double *vertices, size_t num_verts, const int *faces,
     mesh->V(i, 0) = vertices[i * 3];
     mesh->V(i, 1) = vertices[i * 3 + 1];
     mesh->V(i, 2) = vertices[i * 3 + 2];
+  }
+  for (size_t i = 0; i < num_faces; i++) {
     mesh->F(i, 0) = faces[i * 3];
     mesh->F(i, 1) = faces[i * 3 + 1];
     mesh->F(i, 2) = faces[i * 3 + 2];

@@ -41,9 +41,9 @@ func NewMesh(vertices []float64, faces []int) *Mesh {
 
 	res := &Mesh{ptr: C.mesh_new(
 		(*C.double)(vsPtr),
-		C.size_t(len(vertices)),
+		C.size_t(len(vertices)/3),
 		(*C.int)(fsPtr),
-		C.size_t(len(faces)),
+		C.size_t(len(faces)/3),
 	)}
 	C.free(vsPtr)
 	C.free(fsPtr)
