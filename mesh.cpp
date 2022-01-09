@@ -1,6 +1,7 @@
 #include "mesh.h"
 
 #include <igl/readSTL.h>
+#include <igl/remove_duplicate_vertices.h>
 #include <igl/writeSTL.h>
 
 #include <sstream>
@@ -74,6 +75,15 @@ char *mesh_write_stl(mesh_t *mesh, const char *path) {
     return copy_str("an unknown error occurred;");
   }
   return NULL;
+}
+
+mesh_t *mesh_remove_duplicate_vertices(mesh_t *mesh, double epsilon) {
+  mesh_t *res = new mesh_t;
+  Eigen::MatrixXi SVI;
+  Eigen::MatrixXi SVJ;
+  igl::remove_duplicate_vertices(mesh->V, mesh->F, epsilon, res->V, SVI, SVJ,
+                                 res->F);
+  return res;
 }
 
 double *mesh_vertices(mesh_t *mesh) {

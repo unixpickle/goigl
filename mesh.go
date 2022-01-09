@@ -84,6 +84,16 @@ func MeshDecodeSTL(data []byte) (*Mesh, error) {
 	return res, nil
 }
 
+// RemoveDuplicateVertices deletes vertices that are duplicated up to a
+// distance epsilon.
+func (m *Mesh) RemoveDuplicateVertices(epsilon float64) *Mesh {
+	m.Check()
+	ptr := C.mesh_remove_duplicate_vertices(m.ptr, C.double(epsilon))
+	res := &Mesh{ptr: ptr}
+	res.setFinalizer()
+	return res
+}
+
 // Vertices creates a copy of the vertices array.
 func (m *Mesh) Vertices() []float64 {
 	m.Check()

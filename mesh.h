@@ -10,6 +10,7 @@ mesh_t *mesh_new(const double *vertices, size_t num_verts, const int *faces,
                  size_t num_faces);
 mesh_t *mesh_decode_stl(const char *data, size_t data_len, char **error_out);
 char *mesh_write_stl(mesh_t *mesh, const char *path);
+mesh_t *mesh_remove_duplicate_vertices(mesh_t *mesh, double epsilon);
 double *mesh_vertices(mesh_t *mesh);
 size_t mesh_vertices_size(mesh_t *mesh);
 int mesh_num_vertices(mesh_t *mesh);
