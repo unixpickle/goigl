@@ -55,6 +55,7 @@ func NewMesh(vertices []Vertex, faces []Face) *Mesh {
 			// didn't break it.
 			if int(cIdx) < 0 || int(cIdx) >= len(vertices) {
 				panic("face index out of bounds")
+			}
 			b[i*3+j] = cIdx
 		}
 	}
