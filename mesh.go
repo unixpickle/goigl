@@ -25,7 +25,7 @@ type Mesh struct {
 //
 // This will panic if any face index is out of bounds.
 func NewMesh(vertices []Vertex, faces []Face) *Mesh {
-	if len(vertices) >= (1<<30) || len(faces) >= (1<<30) {
+	if len(vertices)*3 >= (1<<30) || len(faces)*3 >= (1<<30) {
 		panic("arrays are too large")
 	}
 
