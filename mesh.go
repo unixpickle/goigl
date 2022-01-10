@@ -24,37 +24,47 @@ type Mesh struct {
 // three vertex indices.
 //
 // This will panic if any face index is out of bounds.
-func NewMesh(vertices []float64, faces []int) *Mesh {
-	vsPtr := C.malloc(C.size_t(len(vertices)) * C.size_t(unsafe.Sizeof(C.double(0))))
+func NewMesh(vertices []Vertex, faces []Face) *Mesh {
+	if len(vertices) >= (1<<30) || len(faces) >= (1<<30) {
+		panic("arrays are too large")
+	}
+
+	vsPtr := C.malloc(C.size_t(len(vertices)*3) * C.size_t(unsafe.Sizeof(C.double(0))))
 	if vsPtr == nil {
 		panic("allocation failed")
 	}
+	defer C.free(unsafe.Pointer(vsPtr))
 	a := (*[1<<30 - 1]C.double)(vsPtr)
-	for i, x := range vertices {
-		a[i] = C.double(x)
+	for i, v := range vertices {
+		for j, x := range v {
+			a[i*3+j] = C.double(x)
+		}
 	}
 
-	fsPtr := C.malloc(C.size_t(len(faces)) * C.size_t(unsafe.Sizeof(C.int(0))))
+	fsPtr := C.malloc(C.size_t(len(faces)*3) * C.size_t(unsafe.Sizeof(C.int(0))))
 	if fsPtr == nil {
-		C.free(vsPtr)
 		panic("allocation failed")
 	}
+	defer C.free(unsafe.Pointer(fsPtr))
+
 	b := (*[1<<30 - 1]C.int)(fsPtr)
-	for i, x := range faces {
-		b[i] = C.int(x)
-		if int(b[i]) < 0 || int(b[i]) >= len(vertices)/3 {
-			panic("face index out of bounds")
+	for i, f := range faces {
+		for j, x := range f {
+			cIdx := C.int(x)
+			// Make sure the index is valid and cast to int
+			// didn't break it.
+			if int(cIdx) < 0 || int(cIdx) >= len(vertices) {
+				panic("face index out of bounds")
+			b[i*3+j] = cIdx
 		}
 	}
 
 	res := &Mesh{ptr: C.mesh_new(
 		(*C.double)(vsPtr),
-		C.size_t(len(vertices)/3),
+		C.size_t(len(vertices)),
 		(*C.int)(fsPtr),
-		C.size_t(len(faces)/3),
+		C.size_t(len(faces)),
 	)}
-	C.free(vsPtr)
-	C.free(fsPtr)
 	res.setFinalizer()
 	return res
 }
@@ -95,13 +105,13 @@ func (m *Mesh) RemoveDuplicateVertices(epsilon float64) *Mesh {
 }
 
 // Vertices creates a copy of the vertices array.
-func (m *Mesh) Vertices() []float64 {
+func (m *Mesh) Vertices() []Vertex {
 	m.Check()
 	data := C.mesh_vertices(m.ptr)
 	carr := (*[1<<30 - 1]C.double)(unsafe.Pointer(data))[:C.mesh_vertices_size(m.ptr)]
-	result := make([]float64, len(carr))
+	result := make([]Vertex, len(carr)/3)
 	for i, x := range carr {
-		result[i] = float64(x)
+		result[i/3][i%3] = float64(x)
 	}
 	C.free(unsafe.Pointer(data))
 	return result
@@ -117,13 +127,13 @@ func (m *Mesh) NumVertices() int {
 }
 
 // Faces creates a copy of the faces array.
-func (m *Mesh) Faces() []int {
+func (m *Mesh) Faces() []Face {
 	m.Check()
 	data := C.mesh_faces(m.ptr)
 	carr := (*[1 << 32]C.int)(unsafe.Pointer(data))[:C.mesh_faces_size(m.ptr)]
-	result := make([]int, len(carr))
+	result := make([]Face, len(carr)/3)
 	for i, x := range carr {
-		result[i] = int(x)
+		result[i/3][i%3] = int(x)
 	}
 	C.free(unsafe.Pointer(data))
 	return result

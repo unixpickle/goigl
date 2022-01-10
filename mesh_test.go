@@ -40,21 +40,26 @@ func TestMeshVerticesFaces(t *testing.T) {
 	}
 	numZeros := 0
 	numOnes := 0
-	for _, x := range mesh.Vertices() {
-		if x == 0 {
-			numZeros++
-		} else if x == 1 {
-			numOnes++
-		} else {
-			t.Fatalf("unexpected vertex: %f", x)
+	for _, v := range mesh.Vertices() {
+		for _, x := range v {
+			if x == 0 {
+				numZeros++
+			} else if x == 1 {
+				numOnes++
+			} else {
+				t.Fatalf("unexpected vertex: %f", x)
+			}
 		}
 	}
 	if numZeros != 12*9/2 || numOnes != 12*9/2 {
 		t.Errorf("unexpected number of ones (%d) or zeros (%d)", numOnes, numZeros)
 	}
-	for i, x := range mesh.Faces() {
-		if x != i {
-			t.Errorf("face %d is %d but should be %d", i, x, i)
+	for i, f := range mesh.Faces() {
+		for j, x := range f {
+			realIdx := i*3 + j
+			if x != realIdx {
+				t.Errorf("face %d is %d but should be %d", realIdx, x, realIdx)
+			}
 		}
 	}
 }
@@ -79,14 +84,14 @@ func TestMeshRemoveDuplicateVertices(t *testing.T) {
 	if len(f) != len(f1) {
 		t.Fatalf("mismatching face count: %d versus %d", len(f), len(f1))
 	}
-	for i, faceIdx := range f {
-		faceIdx1 := f1[i]
-		vertex := v[faceIdx*3 : (faceIdx+1)*3]
-		vertex1 := v1[faceIdx1*3 : (faceIdx1+1)*3]
-		for i, x := range vertex {
-			y := vertex1[i]
-			if x != y {
-				t.Errorf("face %d: vertex should be %v but got %v", i, vertex, vertex1)
+	for i, face := range f {
+		face1 := f1[i]
+		for j, faceIdx := range face {
+			faceIdx1 := face1[j]
+			vertex := v[faceIdx]
+			vertex1 := v1[faceIdx1]
+			if vertex != vertex1 {
+				t.Errorf("face %d[%d]: vertex should be %v but got %v", i, j, vertex, vertex1)
 				break
 			}
 		}
